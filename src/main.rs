@@ -1,7 +1,13 @@
-use std::fs::File;
+mod app;
+mod ui;
+
+use std::{fs::File, io::BufReader};
 
 use clap::{Parser, Subcommand};
+use ratatui::Terminal;
 use rodio::Decoder;
+
+use crate::app::App;
 
 /// Simple program to greet a person
 #[derive(Parser, Debug)]
@@ -15,6 +21,7 @@ struct Args {
 #[derive(Debug, Subcommand)]
 enum Commands {
     Play { file_path: String },
+    Start { file_path: String },
 }
 
 fn main() {
@@ -22,22 +29,35 @@ fn main() {
 
     match args.cmd {
         Commands::Play { file_path } => play_mp3(&file_path),
+        Commands::Start { file_path } => run_tui(&file_path),
     }
 }
 
 fn play_mp3(file_path: &str) {
-    // Get an OS-Sink handle to the default physical sound device.
-    // Note that the playback stops when the handle is dropped.//!
+    // _stream must live as long as the sink
     let handle = rodio::DeviceSinkBuilder::open_default_sink().expect("open default audio stream");
     let player = rodio::Player::connect_new(&handle.mixer());
-    // Load a sound from a file, using a path relative to Cargo.toml
-    let file = File::open(file_path).unwrap();
-    // Decode that sound file into a source
-    let source = Decoder::try_from(file).unwrap();
-    // Play the sound directly on the device
-    handle.mixer().add(source);
 
-    // The sound plays in a separate audio thread,
-    // so we need to keep the main thread alive while it's playing.
-    std::thread::sleep(std::time::Duration::from_secs(5));
+    let file = BufReader::new(File::open(file_path).unwrap());
+    let source = Decoder::try_from(file).unwrap();
+
+    player.append(source);
+
+    player.sleep_until_end();
+}
+
+fn run_tui(file_path: &str) {
+    let mut terminal = ratatui::init();
+
+    let mut app = App::new();
+    app.playing = Some(file_path.clone().to_string());
+
+    app.play(file_path);
+
+    while app.running {
+        terminal.draw(|frame| ui::draw(frame, &app));
+        app.handle_event();
+    }
+
+    ratatui::restore();
 }
