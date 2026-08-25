@@ -37,10 +37,12 @@ impl App {
         }
     }
 
-    pub fn play(&self, file_path: &str) {
+    pub fn play(&self, file_path: &str) -> Option<String> {
         let file = BufReader::new(File::open(file_path).unwrap());
         let source = Decoder::try_from(file).unwrap();
-        self.player.append(source);
+        self.player.stop();
+        self.player.append(source); 
+        Some(file_path.to_string())
     }
 
     pub fn handle_event(&mut self) -> Result<(), Error> {
@@ -61,7 +63,7 @@ impl App {
                 }
                 KeyCode::Enter => {
                     if let Some(song) = self.songs.get(self.cursor).unwrap().to_str() {
-                        self.play(song);
+                        self.playing = self.play(song);
                     }
                 }
                 _ => {}
