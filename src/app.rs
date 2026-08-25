@@ -59,6 +59,11 @@ impl App {
                         self.cursor += 1;
                     }
                 }
+                KeyCode::Enter => {
+                    if let Some(song) = self.songs.get(self.cursor).unwrap().to_str() {
+                        self.play(song);
+                    }
+                }
                 _ => {}
             }
         }
