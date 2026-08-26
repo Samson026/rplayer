@@ -17,6 +17,7 @@ pub struct App {
     handle: MixerDeviceSink,
     pub player: Player,
     pub songs: Vec<PathBuf>,
+    pub search_text: String,
 }
 
 pub struct Playing {
@@ -41,6 +42,7 @@ impl App {
             player,
             songs: Vec::new(),
             cursor: 0,
+            search_text: String::new(),
         }
     }
 
