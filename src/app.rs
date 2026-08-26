@@ -2,19 +2,25 @@ use std::{
     fs::File,
     io::{BufReader, Error},
     path::PathBuf,
+    time::Duration,
 };
 
 use crossterm::event::{self, Event, KeyCode, KeyEvent};
-use rodio::{Decoder, MixerDeviceSink, Player};
+use rodio::{Decoder, MixerDeviceSink, Player, Source};
 
 pub struct App {
-    pub playing: Option<String>,
+    pub playing: Option<Playing>,
     pub running: bool,
     pub screen: Screen,
     pub cursor: usize,
     handle: MixerDeviceSink,
-    player: Player,
+    pub player: Player,
     pub songs: Vec<PathBuf>,
+}
+
+pub struct Playing {
+    pub song: String,
+    pub duration: Option<Duration>,
 }
 
 pub enum Screen {
@@ -37,12 +43,16 @@ impl App {
         }
     }
 
-    pub fn play(&self, file_path: &str) -> Option<String> {
+    pub fn play(&self, file_path: &str) -> Option<Playing> {
         let file = BufReader::new(File::open(file_path).unwrap());
         let source = Decoder::try_from(file).unwrap();
+        let duration = source.total_duration();
         self.player.stop();
-        self.player.append(source); 
-        Some(file_path.to_string())
+        self.player.append(source);
+        Some(Playing {
+            song: file_path.to_string(),
+            duration: duration,
+        })
     }
 
     pub fn handle_event(&mut self) -> Result<(), Error> {

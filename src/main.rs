@@ -5,9 +5,11 @@ use std::{
     fs::{self, File},
     io::BufReader,
     path::Path,
+    time::Duration,
 };
 
 use clap::{Parser, Subcommand};
+use crossterm::event;
 use ratatui::Terminal;
 use rodio::Decoder;
 
@@ -68,7 +70,10 @@ fn run_tui(dir_path: &str) {
 
     while app.running {
         terminal.draw(|frame| ui::draw(frame, &app));
-        app.handle_event();
+
+        if event::poll(Duration::from_millis(16)).unwrap() {
+            app.handle_event().unwrap();
+        }
     }
 
     ratatui::restore();
