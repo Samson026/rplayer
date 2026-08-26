@@ -77,6 +77,13 @@ impl App {
                         self.playing = self.play(song);
                     }
                 }
+                KeyCode::Char(' ') => {
+                    if self.player.is_paused() {
+                        self.player.play();
+                    } else {
+                        self.player.pause();
+                    }
+                }
                 _ => {}
             }
         }
