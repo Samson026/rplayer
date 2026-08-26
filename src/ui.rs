@@ -1,22 +1,37 @@
+use clap::error::ErrorKind::Format;
 use ratatui::{
     Frame,
-    layout::{Constraint, Layout},
-    style::{Color, Style},
-    widgets::{Block, List, ListItem, ListState, Paragraph, Wrap},
+    layout::{Alignment, Constraint, Layout, Rect},
+    style::{Color, Modifier, Style, Stylize},
+    widgets::{
+        Block, Borders, GraphType::Area, List, ListItem, ListState, Padding, Paragraph, Wrap,
+    },
 };
 
 use crate::app::{App, Screen};
 
 pub fn draw(frame: &mut Frame, app: &App) {
+    let [title_area, content_area] =
+        Layout::vertical([Constraint::Percentage(5), Constraint::Percentage(95)])
+            .areas(frame.area());
+
+    let title = format!("rPlayer-{}", env!("CARGO_PKG_VERSION"));
+
+    let block = Block::default()
+        .borders(Borders::TOP)
+        .title(title)
+        .title_alignment(Alignment::Center);
+
+    frame.render_widget(block, title_area);
+
     match app.screen {
-        Screen::Home => draw_home(frame, app),
+        Screen::Home => draw_home(frame, content_area, app),
     }
 }
 
-pub fn draw_home(frame: &mut Frame, app: &App) {
+pub fn draw_home(frame: &mut Frame, area: Rect, app: &App) {
     let [left_area, right_area] =
-        Layout::horizontal([Constraint::Percentage(30), Constraint::Percentage(70)])
-            .areas(frame.area());
+        Layout::horizontal([Constraint::Percentage(30), Constraint::Percentage(70)]).areas(area);
 
     // playing
 
@@ -24,8 +39,12 @@ pub fn draw_home(frame: &mut Frame, app: &App) {
     let pb_area = playing_block.inner(left_area);
     frame.render_widget(playing_block, left_area);
 
-    let [name_area, details_area] =
-        Layout::vertical([Constraint::Length(3), Constraint::Length(3)]).areas(pb_area);
+    let [name_area, details_area, pause_area] = Layout::vertical([
+        Constraint::Length(3),
+        Constraint::Length(3),
+        Constraint::Length(3),
+    ])
+    .areas(pb_area);
 
     let text = if let Some(ref playing) = app.playing {
         format!("Currently playing: {}", playing.song)
@@ -59,10 +78,17 @@ pub fn draw_home(frame: &mut Frame, app: &App) {
         frame.render_widget(gauge, gauge_area);
     }
 
+    // pause display
+
+    match app.player.is_paused() {
+        true => {
+            let pause = Paragraph::new("Paused");
+            frame.render_widget(pause, pause_area);
+        }
+        false => {}
+    }
+
     // Other songs
-    let list_block = Block::bordered().title("Playlist");
-    let _lb_area = list_block.inner(right_area);
-    frame.render_widget(list_block, right_area);
 
     // let constraints: Vec<Constraint> = app.songs.iter().map(|_| Constraint::Length(3)).collect();
     // let areas = Layout::vertical(constraints).split(lb_area);
@@ -84,7 +110,7 @@ pub fn draw_home(frame: &mut Frame, app: &App) {
     state.select(Some(app.cursor));
 
     let list = List::new(songs_list)
-        .block(Block::bordered())
+        .block(Block::bordered().title("Playlist"))
         .highlight_style(Style::default().bg(Color::White).fg(Color::Black))
         .highlight_symbol(">");
 
