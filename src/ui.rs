@@ -114,7 +114,7 @@ pub fn draw_home(frame: &mut Frame, area: Rect, app: &App) {
     let list = List::new(songs_list)
         .block(Block::bordered().title("Playlist"))
         .highlight_style(Style::default().bg(Color::White).fg(Color::Black))
-        .highlight_symbol(">");
+        .highlight_symbol("> ");
 
     frame.render_stateful_widget(list, playlist_area, &mut state);
 }

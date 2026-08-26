@@ -1,4 +1,5 @@
 use std::{
+    alloc::System,
     fs::File,
     io::{BufReader, Error},
     path::PathBuf,
@@ -49,14 +50,18 @@ impl App {
         }
     }
 
-    pub fn play(&self, file_path: &str) -> Option<Playing> {
+    pub fn play(&self, file_path: &PathBuf) -> Option<Playing> {
         let file = BufReader::new(File::open(file_path).unwrap());
         let source = Decoder::try_from(file).unwrap();
         let duration = source.total_duration();
         self.player.stop();
         self.player.append(source);
         Some(Playing {
-            song: file_path.to_string(),
+            song: file_path
+                .file_stem()
+                .and_then(|stem| stem.to_str())
+                .unwrap_or("Unknown")
+                .to_string(),
             duration,
         })
     }
@@ -78,7 +83,7 @@ impl App {
                     }
                 }
                 KeyCode::Enter => {
-                    if let Some(song) = self.songs.get(self.cursor).unwrap().to_str() {
+                    if let Some(song) = self.filtered_songs.get(self.cursor) {
                         self.playing = self.play(song);
                     }
                 }
