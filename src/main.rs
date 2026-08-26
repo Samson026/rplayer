@@ -4,13 +4,11 @@ mod ui;
 use std::{
     fs::{self, File},
     io::BufReader,
-    path::Path,
     time::Duration,
 };
 
 use clap::{Parser, Subcommand};
 use crossterm::event;
-use ratatui::Terminal;
 use rodio::Decoder;
 
 use crate::app::App;
@@ -42,7 +40,7 @@ fn main() {
 fn play_mp3(file_path: &str) {
     // _stream must live as long as the sink
     let handle = rodio::DeviceSinkBuilder::open_default_sink().expect("open default audio stream");
-    let player = rodio::Player::connect_new(&handle.mixer());
+    let player = rodio::Player::connect_new(handle.mixer());
 
     let file = BufReader::new(File::open(file_path).unwrap());
     let source = Decoder::try_from(file).unwrap();
@@ -69,7 +67,7 @@ fn run_tui(dir_path: &str) {
     }
 
     while app.running {
-        terminal.draw(|frame| ui::draw(frame, &app));
+        let _ = terminal.draw(|frame| ui::draw(frame, &app));
 
         if event::poll(Duration::from_millis(16)).unwrap() {
             app.handle_event().unwrap();

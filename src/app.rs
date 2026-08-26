@@ -5,7 +5,7 @@ use std::{
     time::Duration,
 };
 
-use crossterm::event::{self, Event, KeyCode, KeyEvent};
+use crossterm::event::{self, Event, KeyCode};
 use rodio::{Decoder, MixerDeviceSink, Player, Source};
 
 pub struct App {
@@ -13,6 +13,7 @@ pub struct App {
     pub running: bool,
     pub screen: Screen,
     pub cursor: usize,
+    #[allow(dead_code)]
     handle: MixerDeviceSink,
     pub player: Player,
     pub songs: Vec<PathBuf>,
@@ -30,7 +31,7 @@ pub enum Screen {
 impl App {
     pub fn new() -> Self {
         let handle = rodio::DeviceSinkBuilder::open_default_sink().expect("");
-        let player = rodio::Player::connect_new(&handle.mixer());
+        let player = rodio::Player::connect_new(handle.mixer());
 
         Self {
             running: true,
@@ -51,7 +52,7 @@ impl App {
         self.player.append(source);
         Some(Playing {
             song: file_path.to_string(),
-            duration: duration,
+            duration,
         })
     }
 
