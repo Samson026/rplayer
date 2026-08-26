@@ -1,11 +1,8 @@
-use clap::error::ErrorKind::Format;
 use ratatui::{
     Frame,
     layout::{Alignment, Constraint, Layout, Rect},
-    style::{Color, Modifier, Style, Stylize},
-    widgets::{
-        Block, Borders, GraphType::Area, List, ListItem, ListState, Padding, Paragraph, Wrap,
-    },
+    style::{Color, Style},
+    widgets::{Block, Borders, List, ListItem, ListState, Paragraph, Wrap},
 };
 
 use crate::app::{App, Screen};
@@ -80,12 +77,9 @@ pub fn draw_home(frame: &mut Frame, area: Rect, app: &App) {
 
     // pause display
 
-    match app.player.is_paused() {
-        true => {
-            let pause = Paragraph::new("Paused");
-            frame.render_widget(pause, pause_area);
-        }
-        false => {}
+    if app.player.is_paused() {
+        let pause = Paragraph::new("Paused");
+        frame.render_widget(pause, pause_area);
     }
 
     // Other songs
