@@ -1,8 +1,7 @@
-use crossterm::cursor;
 use ratatui::{
     Frame,
     layout::{Constraint, Layout},
-    style::{Color, Style, Stylize},
+    style::{Color, Style},
     widgets::{Block, List, ListItem, ListState, Paragraph, Wrap},
 };
 
@@ -34,7 +33,7 @@ pub fn draw_home(frame: &mut Frame, app: &App) {
         "No file playing".to_string()
     };
 
-    let para1 = Paragraph::new(text.clone()).wrap({ Wrap { trim: true } });
+    let para1 = Paragraph::new(text.clone()).wrap(Wrap { trim: true });
 
     frame.render_widget(para1, name_area);
 
@@ -62,7 +61,7 @@ pub fn draw_home(frame: &mut Frame, app: &App) {
 
     // Other songs
     let list_block = Block::bordered().title("Playlist");
-    let lb_area = list_block.inner(right_area);
+    let _lb_area = list_block.inner(right_area);
     frame.render_widget(list_block, right_area);
 
     // let constraints: Vec<Constraint> = app.songs.iter().map(|_| Constraint::Length(3)).collect();
