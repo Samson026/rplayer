@@ -96,7 +96,7 @@ pub fn draw_home(frame: &mut Frame, area: Rect, app: &App) {
     frame.render_widget(search, search_area);
 
     let songs_list: Vec<ListItem> = app
-        .songs
+        .filtered_songs
         .iter()
         .map(|song| {
             let name = song

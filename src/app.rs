@@ -3,6 +3,7 @@ use std::{
     io::{BufReader, Error},
     path::PathBuf,
     time::Duration,
+    usize,
 };
 
 use crossterm::event::{self, Event, KeyCode};
@@ -18,6 +19,7 @@ pub struct App {
     pub player: Player,
     pub songs: Vec<PathBuf>,
     pub search_text: String,
+    pub filtered_songs: Vec<PathBuf>,
 }
 
 pub struct Playing {
@@ -43,6 +45,7 @@ impl App {
             songs: Vec::new(),
             cursor: 0,
             search_text: String::new(),
+            filtered_songs: Vec::new(),
         }
     }
 
@@ -86,10 +89,47 @@ impl App {
                         self.player.pause();
                     }
                 }
+                KeyCode::Char(char) => {
+                    self.search_text.push(char);
+                    self.calculate_search();
+                }
+                KeyCode::Backspace => {
+                    self.search_text.pop();
+                    self.calculate_search();
+                }
                 _ => {}
             }
         }
 
         Ok(())
+    }
+
+    fn calculate_search(&mut self) {
+        if self.search_text == "" {
+            self.filtered_songs = self.songs.clone();
+            return;
+        }
+
+        self.filtered_songs = Vec::new();
+
+        for song in &self.songs {
+            if song
+                .file_stem()
+                .and_then(|stem| stem.to_str())
+                .is_some_and(|stem| {
+                    stem.to_lowercase()
+                        .contains(&self.search_text.to_lowercase())
+                })
+            {
+                self.filtered_songs.push(song.clone());
+            }
+        }
+
+        self.filtered_songs.sort_by_key(|song| {
+            song.file_stem()
+                .and_then(|stem| stem.to_str())
+                .and_then(|stem| stem.to_lowercase().find(&self.search_text.to_lowercase()))
+                .unwrap_or(usize::MAX)
+        });
     }
 }
