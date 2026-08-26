@@ -1,10 +1,8 @@
 use std::{
-    alloc::System,
     fs::File,
     io::{BufReader, Error},
     path::PathBuf,
     time::Duration,
-    usize,
 };
 
 use crossterm::event::{self, Event, KeyCode};
@@ -110,7 +108,7 @@ impl App {
     }
 
     fn calculate_search(&mut self) {
-        if self.search_text == "" {
+        if self.search_text.is_empty() {
             self.filtered_songs = self.songs.clone();
             return;
         }
