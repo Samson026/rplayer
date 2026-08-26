@@ -1,7 +1,11 @@
 mod app;
 mod ui;
 
-use std::{fs::File, io::BufReader};
+use std::{
+    fs::{self, File},
+    io::BufReader,
+    path::Path,
+};
 
 use clap::{Parser, Subcommand};
 use ratatui::Terminal;
@@ -21,7 +25,7 @@ struct Args {
 #[derive(Debug, Subcommand)]
 enum Commands {
     Play { file_path: String },
-    Start { file_path: String },
+    Start { dir_path: String },
 }
 
 fn main() {
@@ -29,7 +33,7 @@ fn main() {
 
     match args.cmd {
         Commands::Play { file_path } => play_mp3(&file_path),
-        Commands::Start { file_path } => run_tui(&file_path),
+        Commands::Start { dir_path } => run_tui(&dir_path),
     }
 }
 
@@ -46,13 +50,21 @@ fn play_mp3(file_path: &str) {
     player.sleep_until_end();
 }
 
-fn run_tui(file_path: &str) {
+fn run_tui(dir_path: &str) {
     let mut terminal = ratatui::init();
 
     let mut app = App::new();
-    app.playing = Some(file_path.clone().to_string());
 
-    app.play(file_path);
+    let files = fs::read_dir(dir_path).unwrap();
+
+    for file in files {
+        let entry = file.unwrap();
+        let file = entry.path();
+
+        if file.is_file() {
+            app.songs.push(file);
+        }
+    }
 
     while app.running {
         terminal.draw(|frame| ui::draw(frame, &app));

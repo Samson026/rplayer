@@ -1,6 +1,7 @@
 use std::{
     fs::File,
     io::{BufReader, Error},
+    path::PathBuf,
 };
 
 use crossterm::event::{self, Event, KeyCode, KeyEvent};
@@ -10,8 +11,10 @@ pub struct App {
     pub playing: Option<String>,
     pub running: bool,
     pub screen: Screen,
+    pub cursor: usize,
     handle: MixerDeviceSink,
     player: Player,
+    pub songs: Vec<PathBuf>,
 }
 
 pub enum Screen {
@@ -29,6 +32,8 @@ impl App {
             screen: Screen::Home,
             handle,
             player,
+            songs: Vec::new(),
+            cursor: 0,
         }
     }
 
@@ -43,6 +48,16 @@ impl App {
             match key.code {
                 KeyCode::Esc => {
                     self.running = false;
+                }
+                KeyCode::Up => {
+                    if self.cursor > 0 {
+                        self.cursor -= 1;
+                    }
+                }
+                KeyCode::Down => {
+                    if self.cursor < self.songs.len() - 1 {
+                        self.cursor += 1;
+                    }
                 }
                 _ => {}
             }
