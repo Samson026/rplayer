@@ -66,6 +66,8 @@ fn run_tui(dir_path: &str) {
         }
     }
 
+    app.filtered_songs = app.songs.clone();
+
     while app.running {
         let _ = terminal.draw(|frame| ui::draw(frame, &app));
 

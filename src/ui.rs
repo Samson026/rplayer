@@ -87,8 +87,16 @@ pub fn draw_home(frame: &mut Frame, area: Rect, app: &App) {
     // let constraints: Vec<Constraint> = app.songs.iter().map(|_| Constraint::Length(3)).collect();
     // let areas = Layout::vertical(constraints).split(lb_area);
 
+    let [search_area, playlist_area] =
+        Layout::vertical([Constraint::Length(3), Constraint::Min(0)]).areas(right_area);
+
+    let search =
+        Paragraph::new(app.search_text.to_string()).block(Block::bordered().title("Search"));
+
+    frame.render_widget(search, search_area);
+
     let songs_list: Vec<ListItem> = app
-        .songs
+        .filtered_songs
         .iter()
         .map(|song| {
             let name = song
@@ -106,26 +114,7 @@ pub fn draw_home(frame: &mut Frame, area: Rect, app: &App) {
     let list = List::new(songs_list)
         .block(Block::bordered().title("Playlist"))
         .highlight_style(Style::default().bg(Color::White).fg(Color::Black))
-        .highlight_symbol(">");
+        .highlight_symbol("> ");
 
-    frame.render_stateful_widget(list, right_area, &mut state);
-
-    // for (i, (song, area)) in app.songs.iter().zip(areas.iter()).enumerate() {
-    //     let song_name = song
-    //         .file_stem()
-    //         .and_then(|s| s.to_str())
-    //         .unwrap_or("Unknown");
-
-    //     let style = if i == app.cursor {
-    //         Style::default().bg(Color::Gray).fg(Color::White)
-    //     } else {
-    //         Style::default()
-    //     };
-
-    //     let para = Paragraph::new(song_name)
-    //         .style(style)
-    //         .block(Block::bordered());
-
-    //     frame.render_widget(para, *area);
-    // }
+    frame.render_stateful_widget(list, playlist_area, &mut state);
 }
