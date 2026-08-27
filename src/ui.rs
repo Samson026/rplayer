@@ -36,8 +36,10 @@ pub fn draw_home(frame: &mut Frame, area: Rect, app: &App) {
     let pb_area = playing_block.inner(left_area);
     frame.render_widget(playing_block, left_area);
 
-    let [name_area, details_area, pause_area] = Layout::vertical([
-        Constraint::Length(3),
+    let [name_area, _, time_area, details_area, pause_area] = Layout::vertical([
+        Constraint::Length(2),
+        Constraint::Length(1),
+        Constraint::Length(1),
         Constraint::Length(3),
         Constraint::Length(3),
     ])
@@ -52,6 +54,19 @@ pub fn draw_home(frame: &mut Frame, area: Rect, app: &App) {
     let para1 = Paragraph::new(text.clone()).wrap(Wrap { trim: true });
 
     frame.render_widget(para1, name_area);
+
+    // time
+    let time = app.playing.as_ref().and_then(|p| {
+        p.duration.map(|d| {
+            let a_quot = app.player.get_pos().as_secs() / 60;
+            let a_rem = app.player.get_pos().as_secs() % 60;
+            let b_quot = d.as_secs() / 60;
+            let b_rem = d.as_secs() % 60;
+            format!("{}:{} / {}:{}", a_quot, a_rem, b_quot, b_rem)
+        })
+    });
+
+    frame.render_widget(time, time_area);
 
     let ratio = app.playing.as_ref().and_then(|p| {
         p.duration
